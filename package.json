@@ -1,0 +1,19 @@
+{
+  "name": "ed-wu-challenge",
+  "version": "1.0.0",
+  "description": "coding challenge for Ed Wu",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeriWarr/ed-wu-challenge.git"
+  },
+  "author": "Keri Warr",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KeriWarr/ed-wu-challenge/issues"
+  },
+  "homepage": "https://github.com/KeriWarr/ed-wu-challenge#readme"
+}
