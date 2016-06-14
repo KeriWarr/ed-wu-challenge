@@ -1,13 +1,15 @@
 import _ from 'lodash';
-import readline from 'readline';
+import { createInterface } from 'readline';
 import { promisify } from 'bluebird';
 import columnify from 'columnify';
 
 
+// Create a function for reading input with promises
 const rlPromise = promisify(
   (query, callback) => rl.question(query, callback.bind(undefined, undefined))
 );
 
+// Parse input which is either JSON or a non-quote delimited string
 function parseInput(input) {
   let result;
   try {
@@ -23,7 +25,7 @@ function parseInput(input) {
 }
 
 
-const rl = readline.createInterface({
+const rl = createInterface({
   input: process.stdin,
   output: process.stdout
 });
@@ -34,6 +36,7 @@ rlPromise('How many inputs? ').then(answer => {
   const numInputs = parseInt(answer);
   let inputs = [];
 
+  // repeatedly save input and make promises for the next input
   return _.reduce(_.range(numInputs + 1), (promise, index) => {
     return promise.then(input => {
       input && inputs.push(input);
@@ -46,18 +49,29 @@ rlPromise('How many inputs? ').then(answer => {
 }).then(output => {
   rl.close();
 
-  const results = _.map(_.sortBy(_.map(_.pickBy(_.mapValues(_, (func, name) => {
+  // Map all lodash functions to how long they take to execute, or false if they
+  // don't produce the desired output.
+  const results = _(_).mapValues((func, name) => {
+    // Some elements in the lodash object aren't functions, so catch exceptions
     try {
       const timeStart = process.hrtime();
+      // Call lodash function with all supplied arguments
       const result = func(...(args.map(parseInput)));
       const timeEnd = process.hrtime(timeStart);
       if (result === parseInput(output)) return timeEnd[1];
       return false;
     } catch(e) {};
-  }), _.identity),
-  (time, name) => ({ time, name })),
-  f => f.time),
-  f => Object.assign({}, f, { time: `${Math.round(f.time / 100) / 10}ms`}));
+  })
+  // Remove falsy results
+  .pickBy(_.identity)
+  // Convert to an array of objects
+  .map((time, name) => ({ time, name }))
+  // Sort by completion time
+  .sortBy(result => result.time)
+  // Format time as readable string
+  .map(result => Object.assign({}, result,
+    { time: `${Math.round(result.time / 100) / 10}ms`}))
+  .value();
 
   console.log('\n');
   console.log(columnify(results, {
