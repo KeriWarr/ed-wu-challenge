@@ -10,3 +10,7 @@ This is a coding challenge which I started on 2016-06-13
 
 
  Only tested on Ubuntu
+
+## Example
+
+![Example](example.png?raw=true "Example")
