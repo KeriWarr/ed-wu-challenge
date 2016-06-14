@@ -4,7 +4,10 @@
   "description": "coding challenge for Ed Wu",
   "main": "index.js",
   "scripts": {
-    "test": ""
+    "test": "",
+    "build": "babel index.js > run.js",
+    "run": "node run.js",
+    "start": "npm run build; npm run run"
   },
   "repository": {
     "type": "git",
@@ -15,5 +18,14 @@
   "bugs": {
     "url": "https://github.com/KeriWarr/ed-wu-challenge/issues"
   },
-  "homepage": "https://github.com/KeriWarr/ed-wu-challenge#readme"
+  "homepage": "https://github.com/KeriWarr/ed-wu-challenge#readme",
+  "dependencies": {
+    "bluebird": "^3.4.0",
+    "columnify": "^1.5.4",
+    "lodash": "^4.13.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-preset-es2015": "^6.9.0"
+  }
 }
