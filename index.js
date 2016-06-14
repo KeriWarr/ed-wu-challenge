@@ -3,26 +3,30 @@ import readline from 'readline';
 import { promisify } from 'bluebird';
 import columnify from 'columnify';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+
+const rlPromise = promisify(
+  (query, callback) => rl.question(query, callback.bind(undefined, undefined))
+);
 
 function parseInput(input) {
-  let result = undefined;
+  let result;
   try {
     result = JSON.parse(input);
   } catch(e) {
     try {
       result = JSON.parse(`"${input}"`);
-    } catch(e) {}
+    } catch(e) {
+      result = undefined;
+    }
   }
   return result;
 }
 
-const rlPromise = promisify(
-  (query, callback) => rl.question(query, callback.bind(undefined, undefined))
-);
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 let args;
 
@@ -42,15 +46,22 @@ rlPromise('How many inputs? ').then(answer => {
 }).then(output => {
   rl.close();
 
-  const results = _.sortBy(_.toPairs(_.pickBy(_.mapValues(_, (func, name) => {
+  const results = _.map(_.sortBy(_.map(_.pickBy(_.mapValues(_, (func, name) => {
     try {
       const timeStart = process.hrtime();
       const result = func(...(args.map(parseInput)));
       const timeEnd = process.hrtime(timeStart);
-      if (result === parseInput(output)) return `${Math.round(timeEnd[1] / 100) / 10}ms`;
+      if (result === parseInput(output)) return timeEnd[1];
       return false;
     } catch(e) {};
-  }), _.identity)), f => f[1]);
+  }), _.identity),
+  (time, name) => ({ time, name })),
+  f => f.time),
+  f => Object.assign({}, f, { time: `${Math.round(f.time / 100) / 10}ms`}));
 
-  console.log('\n\n', columnify(data, {columns: ['FUNCTION', 'TIME']}));
+  console.log('\n');
+  console.log(columnify(results, {
+    columns: ['name', 'time'],
+    columnSplitter: '  |  '
+  }));
 });
