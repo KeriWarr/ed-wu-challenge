@@ -77,7 +77,7 @@ function testLibrary(lib, libName) {
   .sortBy(result => result.time)
   // Format time as readable string
   .map(result => Object.assign({}, result,
-    { time: `${Math.round(result.time / 100) / 10}ms`}))
+    { time: `${Math.round(result.time / 100) / 10}μs`}))
   .value();
 
   console.log(`\n${libName}\n`);
