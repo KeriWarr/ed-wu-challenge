@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import underscore from 'underscore';
 import { createInterface } from 'readline';
 import { promisify } from 'bluebird';
 import columnify from 'columnify';
@@ -24,13 +25,13 @@ function parseInput(input) {
   return result;
 }
 
-
 const rl = createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
 let args;
+let out;
 
 rlPromise('How many inputs? ').then(answer => {
   const numInputs = parseInt(answer);
@@ -48,17 +49,23 @@ rlPromise('How many inputs? ').then(answer => {
   return rlPromise('Expected output? ');
 }).then(output => {
   rl.close();
+  out = output;
 
+  testLibrary(_, 'Lodash:');
+  testLibrary(_.omit(underscore, ['delay', 'defer']), 'Underscore:');
+});
+
+function testLibrary(lib, libName) {
   // Map all lodash functions to how long they take to execute, or false if they
   // don't produce the desired output.
-  const results = _(_).mapValues((func, name) => {
+  const results = _(lib).mapValues((func, name) => {
     // Some elements in the lodash object aren't functions, so catch exceptions
     try {
       const timeStart = process.hrtime();
       // Call lodash function with all supplied arguments
       const result = func(...(args.map(parseInput)));
       const timeEnd = process.hrtime(timeStart);
-      if (result === parseInput(output)) return timeEnd[1];
+      if (result === parseInput(out)) return timeEnd[1];
       return false;
     } catch(e) {};
   })
@@ -73,9 +80,9 @@ rlPromise('How many inputs? ').then(answer => {
     { time: `${Math.round(result.time / 100) / 10}ms`}))
   .value();
 
-  console.log('\n');
+  console.log(`\n${libName}\n`);
   console.log(columnify(results, {
     columns: ['name', 'time'],
     columnSplitter: '  |  '
   }));
-});
+}
